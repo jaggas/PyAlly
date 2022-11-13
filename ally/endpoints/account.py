@@ -92,10 +92,10 @@ class Account2(Model):
     def account_value(self) -> float:
         return 
 
-
+'''
 with open('response.json', 'r') as fp:
     response = json.load(fp)
 
 acct = Account2(response['response'])
 
-print()
+print()'''
