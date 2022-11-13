@@ -49,7 +49,7 @@ class Ally:
     This is the main class for this library.
     """
 
-    from .Account import accounts, balances, history, holdings
+    from .Account import get_accounts, balances, history, holdings
     from .Info import clock, status
     from .News import lookupNews, searchNews
     from .Option import expirations, optionSearchQuery, search, strikes

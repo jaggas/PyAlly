@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from ..Api import AccountEndpoint, RequestType
-from .utils import _dot_flatten
+from ..endpoints.account import Account2
 
 
 class Accounts(AccountEndpoint):
@@ -32,9 +32,7 @@ class Accounts(AccountEndpoint):
         """Extract certain fields from response"""
         response = response.json()["response"]
         accounts = response["accounts"]
-
-        d = {k: v for k, v in _dot_flatten(accounts).items()}
-        return d
+        return accounts
 
     @staticmethod
     def DataFrame(raw):
@@ -46,7 +44,7 @@ class Accounts(AccountEndpoint):
         return pd.DataFrame.from_dict(raw)
 
 
-def accounts(self, dataframe: bool = True, block: bool = True):
+def get_accounts(self, dataframe: bool = True, block: bool = True):
     """Gets list of available accounts, and some basic metrics for each one.
 
     Calls the 'accounts.json' endpoint to get the current list of accounts.
@@ -67,7 +65,18 @@ def accounts(self, dataframe: bool = True, block: bool = True):
 
             RateLimitException: If block=False, rate limit problems will be raised
     """
-    result = Accounts(auth=self.auth, block=block).request()
+    acct = Accounts(auth=self.auth, block=block)
+    acct.request()
+
+    acct2 = Account2(acct.response)
+
+    day_trading = acct2.balance.buying_power.day_trading
+    eq = acct2.balance.buying_power.equity_percentage
+
+    sod = acct2.balance.buying_power.options_start_of_day
+
+    num = acct2.account_number
+
 
     if dataframe:
         try:

@@ -121,12 +121,14 @@ class Endpoint:
             # Give the rate manager the information we learned
             RateLimit.normal_update(dict(x.headers), self._type)
 
+            self.response = x.json().get("response")
             return self.extract(x)
 
     def __init__(self, auth=None, **kwargs):
         """Create and send request
         Return the processed result
         """
+        self.reponse = None
 
         # Get post and get data
         send_params, send_data = self.req_body(**kwargs)
