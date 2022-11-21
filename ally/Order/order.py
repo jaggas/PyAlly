@@ -231,7 +231,7 @@ class Order:
         Can be viewed at obj.account
 
         """
-        self.account = int(str(account)[:8])
+        self.account = str(account)[:8]
 
     def set_symbol(self, symbol: str):
         """Sets the order's instrument.

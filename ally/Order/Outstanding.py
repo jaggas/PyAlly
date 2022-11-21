@@ -23,6 +23,7 @@
 from ..Api import AccountEndpoint, RequestType
 from .order import Order
 
+import xml.etree.ElementTree as ET
 
 class OutstandingOrders(AccountEndpoint):
     """Send an order off"""

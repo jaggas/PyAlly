@@ -66,17 +66,16 @@ def get_accounts(self, dataframe: bool = True, block: bool = True):
             RateLimitException: If block=False, rate limit problems will be raised
     """
     acct = Accounts(auth=self.auth, block=block)
-    acct.request()
+    result = acct.request()
 
+    '''
     acct2 = Account2(acct.response)
 
     day_trading = acct2.balance.buying_power.day_trading
     eq = acct2.balance.buying_power.equity_percentage
 
     sod = acct2.balance.buying_power.options_start_of_day
-
-    num = acct2.account_number
-
+    '''
 
     if dataframe:
         try:
