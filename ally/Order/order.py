@@ -179,6 +179,10 @@ class Order:
             "xmlns": "http://www.fixprotocol.org/FIXML-5-0-SP2",
             Order._otype_dict_reverse[self.otype.value]: d,
         }
+        
+        import pprint
+        pp = pprint.PrettyPrinter(indent=3)
+        pp.pprint(order)
 
         # Rework our tree
         return transposeTree(
