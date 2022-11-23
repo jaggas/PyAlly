@@ -25,25 +25,13 @@
 Controls the Ally() account class, the bread and butter of the library.
 """
 
-from json import load
-from os import environ
-
 from .Api import setTimeout
 from .Auth import Auth
-from .exception import ApiKeyException
 from .Watchlist import Watchlist
-
-_all_params = (
-    "ALLY_OAUTH_SECRET",
-    "ALLY_OAUTH_TOKEN",
-    "ALLY_CONSUMER_SECRET",
-    "ALLY_CONSUMER_KEY",
-    "ALLY_ACCOUNT_NBR",
-)
+from .classes import ApiKeys
 
 
 class Ally:
-    # No docstring
     """The ally.Ally.Ally class.
 
     This is the main class for this library.
@@ -59,23 +47,7 @@ class Ally:
     auth = None
     account_nbr = None
 
-    def _param_load_environ(self):
-        """Try to use environment params.
-
-        Account number is now mandatory."""
-        params = {}
-        for t in _all_params:
-            params[t] = environ.get(t, None)
-        return params
-
-    def _param_load_file(self, fname):
-        """Try to load params from a json file.
-
-        Account number is now mandatory."""
-        with open(fname, "r") as f:
-            return load(f)
-
-    def __init__(self, params=None, timeout: float = 1.0):
+    def __init__(self, keys = ApiKeys(), timeout: float = 1.0):
         """Manages all facets of your Ally Invest account.
 
         Manage your account
@@ -119,31 +91,16 @@ class Ally:
         .. _Quotes: quotes.html
         .. _Account: account.html
         """
-
-        # We were passed an actual dictionary
-        if type(params) == type({}):
-            pass
-
-        # We were passed a JSON file
-        elif type(params) == type(""):
-            params = self._param_load_file(params)
-
-        # Use environment variables
-        else:
-            params = self._param_load_environ()
-
-        # Check that we have all the parameters we need
-        for t in _all_params:
-            if params.get(t, None) is None:
-                raise ApiKeyException("{0} parameter not provided".format(t))
+        # Store keys
+        self.keys: ApiKeys = keys
 
         # Create the auth that we want
         #  This is the only tidbit that actually
         #   needs these parameters anyways
-        self.auth = Auth(params)
+        self.auth = Auth(keys)
 
         # But keep account number
-        self.account_nbr = params["ALLY_ACCOUNT_NBR"]
+        self.account_nbr = keys["ALLY_ACCOUNT_NBR"]
 
         # Watchlist gets copy of our object
         #  this is so that it can manage its own api calls

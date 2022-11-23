@@ -1,19 +1,43 @@
 from __future__ import annotations
 import enum
-from typing import Dict
+from typing import Dict, List
 import json
 
 class Model:
     def __init__(self, response: dict):
         self._response = response
+    
+    def __getitem__(self, attr: str):
+        return self._response[attr]
 
-    def __getattr__(self, attr: str):
-        return self._response.get(attr, None)
+    def to_dict(self) -> dict:
+        filter_lambda = lambda x: x[0] != '_' and not callable(getattr(self, x, None))
+        property_l = list(filter(filter_lambda, dir(self)))
+        return {prop: getattr(self, prop) for prop in property_l}
+             
+class Account(Model):
+    def __init__(self, response: dict):
+        super().__init__(response)
+    
+    @property
+    def account_number(self) -> str:
+        return self['account']
+    
+    @property
+    def value(self) -> float:
+        return float(self['accountvalue'])
+    
+    @property
+    def cash_available_for_withdrawal(self) -> float:
+        """Cash available for withdrawal (cash & margin accounts only, n/a for retirement accounts)"""
+        return float(self['buyingpower']['cashavailableforwithdrawal'])
+    
 
 class HoldingType(enum.Enum):
     CASH = 1
     MARGIN_LONG = 2
     MARGIN_SHORT = 5
+
 
 class BuyingPower(Model):
     def __init__(self, response: dict):
@@ -29,11 +53,6 @@ class BuyingPower(Model):
         return float(self.daytrading)
 
     @property
-    def equity_percentage(self) -> float:
-        """Percentage of equity (margin accounts only)"""
-        return float(self.equitypercentage)
-
-    @property
     def options(self) -> float:
         """Options buying power"""
         return float(self.options)
@@ -46,7 +65,7 @@ class BuyingPower(Model):
     @property
     def stock(self) -> float:
         """Stock buying power"""
-        return float(self.stock)
+        return float(self['stock'])
 
     @property
     def stock_start_of_day(self) -> float:

@@ -31,10 +31,7 @@ class Balances(AccountEndpoint):
     def extract(self, response):
         """Extract certain fields from response"""
         response = response.json()["response"]
-        balances = response["accountbalance"]
-
-        d = {k: v for k, v in _dot_flatten(balances).items()}
-        return d
+        return response["accountbalance"]
 
     @staticmethod
     def DataFrame(raw):

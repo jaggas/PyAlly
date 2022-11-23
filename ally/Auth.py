@@ -23,12 +23,13 @@
 
 Authentication classes.
 """
-
-from datetime import datetime, timedelta
-
+import pendulum as pdl
 from requests import Session
 from requests_oauthlib import OAuth1
 
+from .classes import ApiKeys
+
+DEFAULT_CACHING_INTERVAL = pdl.duration(seconds=9.7)
 
 class Auth:
     """Auth object, caching and creating new sessions as needed"""
@@ -41,51 +42,48 @@ class Auth:
 
     _params = {}
 
-    def __init__(self, params, dt=None):
-        """Creates an auth object.
+    def __init__(self, 
+                 params: ApiKeys = None, 
+                 dt: pdl.duration = DEFAULT_CACHING_INTERVAL):
+        """Creates an auth object."""
 
-        Args:
-            params: set of keys given by Ally API
-            dt: time interval for caching. 10 seconds max
+        # Cache invalidation interval
+        self._valid_auth_dt: pdl.duration = dt
 
-        """
+        # Api keys
+        self._params: ApiKeys = params
+    
+        # Request session
+        self._session: Session = None
 
-        # make sure DT is good
-        if dt is None:
-            dt = timedelta(seconds=9.7)
-
-        # Keep track of the cache invalidation time
-        self._valid_auth_dt = dt
-
-        # Store what we need
-        self._params = params
+        # OAuth object
+        self._auth: OAuth1 = None
 
         # Precompute some stuff
         self.sess
         self.auth
 
     @property
-    def sess(self):
+    def sess(self) -> Session:
         if self._session is None:
             self._session = Session()
         return self._session
 
     @property
-    def _get_auth(self):
+    def _get_auth(self) -> OAuth1:
         # Compute the auth, without caching
         return OAuth1(
-            self._params.get("ALLY_CONSUMER_KEY"),
-            self._params.get("ALLY_CONSUMER_SECRET"),
-            self._params.get("ALLY_OAUTH_TOKEN"),
-            self._params.get("ALLY_OAUTH_SECRET"),
+            self._params["ALLY_CONSUMER_KEY"],
+            self._params["ALLY_CONSUMER_SECRET"],
+            self._params["ALLY_OAUTH_TOKEN"],
+            self._params["ALLY_OAUTH_SECRET"],
             signature_type="auth_header",
         )
 
     @property
     def auth(self):
-
         # Precalculate current time
-        now = datetime.now()
+        now = pdl.now()
 
         # If outside time valid range, regenerate auth
         if self._auth is None or self._auth_expire < now:
